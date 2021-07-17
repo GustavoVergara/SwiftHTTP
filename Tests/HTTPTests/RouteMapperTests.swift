@@ -73,10 +73,12 @@ final class RouteMapperTests: XCTestCase {
     }
     
     func test_map_addsBothRouteAndBodyHeaders() throws {
-        httpRouteStub.headers = ["RouteStubKey": "RouteStubValue"]
-        httpBodyStub.additionalHeaders = ["BodyStubKey": "BodyStubValue"]
+        let routeStub = (key: "RouteStubKey", value: "RouteStubValue")
+        let bodyStub = (key: "BodyStubKey", value: "BodyStubValue")
+        httpRouteStub.headers = [routeStub.key: routeStub.value]
+        httpBodyStub.additionalHeaders = [bodyStub.key: bodyStub.value]
         let urlRequest = try sut.map(httpRouteStub)
-        XCTAssertEqual(urlRequest.allHTTPHeaderFields, ["RouteStubKey": "RouteStubValue", "BodyStubKey": "BodyStubValue"])
+        XCTAssertEqual(urlRequest.allHTTPHeaderFields, [routeStub.key: routeStub.value, bodyStub.key: bodyStub.value])
     }
     
     func test_map_addsBodyData() throws {

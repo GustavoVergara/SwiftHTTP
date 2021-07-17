@@ -9,7 +9,7 @@ public struct JSONBody<T: Encodable>: HTTPBody {
         self.encoder = encoder
     }
     
-    public var additionalHeaders: [String : String] {
+    public var additionalHeaders: [String: String] {
         ["Content-Type": "application/json"]
     }
     

@@ -9,7 +9,7 @@ public final class HTTPRouteStub: HTTPRoute, Equatable {
     public var method: HTTPMethod = .get
     public var headers: [String: String] = [:]
     public var query: [String: String] = [:]
-    public var body: HTTPBody? = nil
+    public var body: HTTPBody?
 
     public init(
         scheme: String = "",

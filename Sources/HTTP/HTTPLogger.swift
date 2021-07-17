@@ -63,7 +63,7 @@ public class HTTPLogger: HTTPLoggerProtocol {
         print(logString)
     }
     
-    private func logHeaders(_ headers: [String : String]) -> String {
+    private func logHeaders(_ headers: [String: String]) -> String {
         let string = headers.reduce(String()) { str, header in
             let string = "  \(header.key) : \(header.value)"
             return str + "\n" + string
