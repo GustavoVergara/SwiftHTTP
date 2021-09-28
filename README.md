@@ -12,3 +12,4 @@ This is a *super lightweight* HTTP requests package.
 - [x] Handle enconding to JSON
 - [x] Custom encodings
 - [ ] Custom decodings
+- [X] Async/Await support
