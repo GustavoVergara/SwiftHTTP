@@ -8,25 +8,26 @@ on:
 
 jobs:
   test:
-    runs-on: macos-latest
+    runs-on: macos-11
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode-version: ['13.0']
+        destination: ['platform=OS X', 'platform=iOS Simulator,OS=15.0,name=iPhone 12']
 
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/cache@v2
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-
-
-      - name: Generate .xcodeproj
-        run: swift package generate-xcodeproj
+      - name: Set Xcode version to ${{ matrix.xcode-version }}
+        run: xcversion select ${{ matrix.xcode-version }}
 
       - name: Run tests
-        run: xcodebuild test -scheme HTTP-Package -destination 'platform=OS X' | bundle exec xcpretty -r html --output .build/reports/tests.html
+        run: |
+          set -o pipefail
+          xcodebuild test -scheme HTTP-Package -destination '${{ matrix.destination }}' | bundle exec xcpretty -r html --output .build/reports/tests.html
 
       - uses: actions/upload-artifact@v2
+        if: always()
         with:
-          name: test-report
+          name: test-report-${{ matrix.destination }}
           path: .build/reports/tests.html
