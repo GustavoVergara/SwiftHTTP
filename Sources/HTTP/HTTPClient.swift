@@ -64,14 +64,6 @@ public struct HTTPClient: HTTPClientProtocol {
         return .success(apiResponse)
     }
     
-    private func call<T>(_ closure: @escaping (T) -> Void, with value: T, on queue: DispatchQueue? = nil) {
-        if let queue = queue {
-            queue.async { closure(value) }
-        } else {
-            closure(value)
-        }
-    }
-    
 }
 
 extension Optional where Wrapped == DispatchQueue {

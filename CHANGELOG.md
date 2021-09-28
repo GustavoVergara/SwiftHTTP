@@ -1,5 +1,4 @@
 ## [Unreleased]
-
 ## [1.0.0] - 2021-07-16
 ### Added
 - `HTTPClient`, to receive HTTPRoutes and execute requests
