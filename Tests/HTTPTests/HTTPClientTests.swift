@@ -2,6 +2,7 @@ import XCTest
 @testable import HTTPTestKit
 @testable import HTTP
 
+@available(swift, deprecated: 5.5, message: "This will be removed when HTTPClient migrates to support async only.")
 final class HTTPClientTests: XCTestCase {
     
     var routeMapperSpy: RouteMapperSpy!

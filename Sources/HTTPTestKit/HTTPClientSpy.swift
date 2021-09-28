@@ -19,4 +19,24 @@ public final class HTTPClientSpy: HTTPClientProtocol {
             completion(result)
         }
     }
+    
+    public var invokedAsyncRequest = false
+    public var invokedAsyncRequestCount = 0
+    public var invokedAsyncRequestParameters: (route: HTTPRoute, Void)?
+    public var invokedAsyncRequestParametersList = [(route: HTTPRoute, Void)]()
+    public var stubbedAsyncRequestError: Error?
+    public var stubbedAsyncRequestResult: HTTPResponse!
+
+    @available(iOS 15.0.0, *)
+    @available(macOS 12.0.0, *)
+    public func request(_ route: HTTPRoute) async throws -> HTTPResponse {
+        invokedAsyncRequest = true
+        invokedAsyncRequestCount += 1
+        invokedAsyncRequestParameters = (route, ())
+        invokedAsyncRequestParametersList.append((route, ()))
+        if let error = stubbedAsyncRequestError {
+            throw error
+        }
+        return stubbedAsyncRequestResult
+    }
 }

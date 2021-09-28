@@ -1,4 +1,10 @@
 ## [Unreleased]
+### Added
+- New `request` method to `HTTPClient` using the new async/await syntax.
+
+### Deprecated
+- `HTTPClient`'s `.request(_ route: HTTPRoute, returnQueue: DispatchQueue?, completion: @escaping (HTTPResult) -> Void)` in favor of the new async/await syntax.
+
 ## [1.0.0] - 2021-07-16
 ### Added
 - `HTTPClient`, to receive HTTPRoutes and execute requests

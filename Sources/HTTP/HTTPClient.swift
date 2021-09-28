@@ -3,10 +3,14 @@ import Foundation
 public typealias HTTPResult = Result<HTTPResponse, HTTPError>
 
 public protocol HTTPClientProtocol {
+    @available(swift, deprecated: 5.5, message: "This will be removed in future releases; please migrate to the async alternative `request(_ route: HTTPRoute)`.")
     func request(_ route: HTTPRoute, returnQueue: DispatchQueue?, completion: @escaping (HTTPResult) -> Void)
+    @available(iOS 15.0.0, macOS 12.0.0, tvOS 15.0, watchOS 8.0, *)
+    func request(_ route: HTTPRoute) async throws -> HTTPResponse
 }
 
 public extension HTTPClientProtocol {
+    @available(swift, deprecated: 5.5, message: "This will be removed in future releases; please migrate to the async alternative `request(_ route: HTTPRoute)`.")
     func request(_ route: HTTPRoute, completion: @escaping (HTTPResult) -> Void) {
         request(route, returnQueue: nil, completion: completion)
     }
@@ -62,6 +66,36 @@ public struct HTTPClient: HTTPClientProtocol {
         }
         
         return .success(apiResponse)
+    }
+    
+    @available(iOS 15.0.0, macOS 12.0.0, tvOS 15.0, watchOS 8.0, *)
+    public func request(_ route: HTTPRoute) async throws -> HTTPResponse {
+        guard let request = try? routeMapper.map(route) else {
+            throw HTTPError(code: .invalidRequest, response: nil)
+        }
+        logger.logRequest(request)
+        
+        do {
+            let (data, urlResponse) = try await urlSession.data(for: request)
+            logger.logResponse(data: data, response: urlResponse, error: nil)
+            return try result(data: data, response: urlResponse)
+        } catch {
+            switch error {
+            case let httpError as HTTPError:
+                throw httpError
+            default:
+                logger.logResponse(data: nil, response: nil, error: error)
+                throw HTTPError(code: .unknown, response: nil)
+            }
+        }
+    }
+    
+    private func result(data: Data?, response: URLResponse?) throws -> HTTPResponse {
+        if let data = data, let response = response as? HTTPURLResponse {
+            return HTTPResponse(response: response, body: data)
+        } else {
+            throw HTTPError(code: .invalidResponse, response: nil)
+        }
     }
     
 }
