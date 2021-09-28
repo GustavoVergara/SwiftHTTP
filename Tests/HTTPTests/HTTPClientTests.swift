@@ -7,7 +7,7 @@ final class HTTPClientTests: XCTestCase {
     var routeMapperSpy: RouteMapperSpy!
     var urlSessionSpy: URLSessionSpy!
     var dataTaskSpy: URLSessionDataTaskSpy!
-    var apiLoggerSpy: HTTPLoggerSpy!
+    var httpLoggerSpy: HTTPLoggerSpy!
 
     var sut: HTTPClientProtocol!
     
@@ -17,7 +17,7 @@ final class HTTPClientTests: XCTestCase {
         urlSessionSpy = URLSessionSpy()
         dataTaskSpy = URLSessionDataTaskSpy()
         urlSessionSpy.stubbedDataTaskResult = dataTaskSpy
-        apiLoggerSpy = HTTPLoggerSpy()
+        httpLoggerSpy = HTTPLoggerSpy()
 
         sut = createSUT()
     }
@@ -26,7 +26,7 @@ final class HTTPClientTests: XCTestCase {
         HTTPClient(
             urlSession: urlSessionSpy,
             routeMapper: routeMapperSpy,
-            logger: apiLoggerSpy
+            logger: httpLoggerSpy
         )
     }
     
@@ -91,10 +91,10 @@ final class HTTPClientTests: XCTestCase {
     }
     
     func test_request_completesWithUnknownError_whenURLSessionReturnsAnErrorWithDataAndResponse() {
-        let expectedResult = HTTPResult.failure(HTTPError(code: .unknown, response: Stub.apiResponse))
+        let expectedResult = HTTPResult.failure(HTTPError(code: .unknown, response: Stub.httpResponse))
         var receivedResult: HTTPResult?
         
-        urlSessionSpy.stubbedDataTaskCompletionHandlerResult = (Stub.data, Stub.httpResponse, ErrorStub())
+        urlSessionSpy.stubbedDataTaskCompletionHandlerResult = (Stub.data, Stub.httpURLResponse, ErrorStub())
         
         sut.request(HTTPRouteStub()) { result in
             receivedResult = result
@@ -104,10 +104,10 @@ final class HTTPClientTests: XCTestCase {
     }
     
     func test_request_completesWithSuccess_whenURLSessionReturnsDataAndAHTTPResponse() {
-        let expectedResult = HTTPResult.success(Stub.apiResponse)
+        let expectedResult = HTTPResult.success(Stub.httpResponse)
         var receivedResult: HTTPResult?
         
-        urlSessionSpy.stubbedDataTaskCompletionHandlerResult = (Stub.data, Stub.httpResponse, nil)
+        urlSessionSpy.stubbedDataTaskCompletionHandlerResult = (Stub.data, Stub.httpURLResponse, nil)
         
         sut.request(HTTPRouteStub()) { result in
             receivedResult = result
@@ -123,7 +123,7 @@ final class HTTPClientTests: XCTestCase {
         
         var receivedOnExpectedQueue: Bool?
         
-        urlSessionSpy.stubbedDataTaskCompletionHandlerResult = (Stub.data, Stub.httpResponse, nil)
+        urlSessionSpy.stubbedDataTaskCompletionHandlerResult = (Stub.data, Stub.httpURLResponse, nil)
         
         let expectation = self.expectation(description: "request callback")
         sut.request(HTTPRouteStub(), returnQueue: expectedReturnQueue) { _ in
@@ -139,24 +139,24 @@ final class HTTPClientTests: XCTestCase {
     func test_request_logsRequest() {
         sut.request(HTTPRouteStub(), completion: { _ in })
         
-        XCTAssertEqual(apiLoggerSpy.invokedLogRequestParameters?.request, Stub.urlRequest)
+        XCTAssertEqual(httpLoggerSpy.invokedLogRequestParameters?.request, Stub.urlRequest)
     }
     
     func test_request_logsResponse() {
-        urlSessionSpy.stubbedDataTaskCompletionHandlerResult = (Stub.data, Stub.httpResponse, nil)
+        urlSessionSpy.stubbedDataTaskCompletionHandlerResult = (Stub.data, Stub.httpURLResponse, nil)
         
         sut.request(HTTPRouteStub()) { _ in }
         
-        let logResponseParameters = apiLoggerSpy.invokedLogResponseParameters
+        let logResponseParameters = httpLoggerSpy.invokedLogResponseParameters
         XCTAssertEqual(logResponseParameters?.data, Stub.data)
-        XCTAssertEqual(logResponseParameters?.response, Stub.httpResponse)
+        XCTAssertEqual(logResponseParameters?.response, Stub.httpURLResponse)
     }
     
     enum Stub {
         static let url = URL(string: "www.google.com.br")!
         static let urlRequest = URLRequest(url: url)
-        static let httpResponse = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        static let httpURLResponse = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
         static let data = Data([1, 5, 9, 4, 2, 3, 1])
-        static let apiResponse = HTTPResponse(response: httpResponse, body: data)
+        static let httpResponse = HTTPResponse(response: httpURLResponse, body: data)
     }
 }

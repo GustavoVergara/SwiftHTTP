@@ -4,14 +4,14 @@ import XCTest
 
 final class RouteMapperTests: XCTestCase {
     
-    var apiRouteStub: HTTPRouteStub!
-    var apiBodyStub: HTTPBodyStub!
+    var httpRouteStub: HTTPRouteStub!
+    var httpBodyStub: HTTPBodyStub!
     
     var sut: RouteMapperProtocol!
     
     override func setUp() {
-        apiBodyStub = HTTPBodyStub()
-        apiRouteStub = HTTPRouteStub(scheme: Stub.scheme, host: Stub.host, body: apiBodyStub)
+        httpBodyStub = HTTPBodyStub()
+        httpRouteStub = HTTPRouteStub(scheme: Stub.scheme, host: Stub.host, body: httpBodyStub)
         
         sut = createSUT()
     }
@@ -22,83 +22,83 @@ final class RouteMapperTests: XCTestCase {
     }
     
     func test_map_setsURLToBaseURL_whenNoPathIsReceived() throws {
-        let urlRequest = try sut.map(apiRouteStub)
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.url, URL(string: Stub.baseURL))
         
-        apiRouteStub.host = Stub.alternateHost
-        let alternateURLRequest = try sut.map(apiRouteStub)
+        httpRouteStub.host = Stub.alternateHost
+        let alternateURLRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(alternateURLRequest.url, URL(string: Stub.alternateBaseURL))
     }
     
     func test_map_setsURLToBaseURLWithPath() throws {
-        apiRouteStub.path = "/StubPath"
-        let urlRequest = try sut.map(apiRouteStub)
+        httpRouteStub.path = "/StubPath"
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.url, URL(string: Stub.baseURL + "/StubPath"))
     }
     
     func test_map_setsQueryItems() throws {
-        apiRouteStub.query = ["StubKey": "StubValue"]
-        let urlRequest = try sut.map(apiRouteStub)
+        httpRouteStub.query = ["StubKey": "StubValue"]
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.url, URL(string: Stub.baseURL + "?StubKey=StubValue"))
     }
     
     func test_map_doesNotSetQueryItems_whenTheValueIsEmpty() throws {
-        apiRouteStub.query = ["q": ""]
-        let urlRequest = try sut.map(apiRouteStub)
+        httpRouteStub.query = ["q": ""]
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.url, URL(string: Stub.baseURL))
     }
     
     func test_map_setsMethod() throws {
-        apiRouteStub.method = .put
-        let urlRequest = try sut.map(apiRouteStub)
+        httpRouteStub.method = .put
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.httpMethod, HTTPMethod.put.rawValue)
         
-        apiRouteStub.method = .delete
-        let otherURLRequest = try sut.map(apiRouteStub)
+        httpRouteStub.method = .delete
+        let otherURLRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(otherURLRequest.httpMethod, HTTPMethod.delete.rawValue)
     }
     
     func test_map_setsHeaders() throws {
         let expectedHeaders = ["StubKey": "StubValue"]
-        apiRouteStub.headers = expectedHeaders
-        let urlRequest = try sut.map(apiRouteStub)
+        httpRouteStub.headers = expectedHeaders
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.allHTTPHeaderFields, expectedHeaders)
     }
     
     func test_map_addsHeadersFromBody() throws {
         let expectedHeaders = ["Content-Type": "application/json; charset=utf-8"]
-        apiBodyStub.additionalHeaders = expectedHeaders
-        let urlRequest = try sut.map(apiRouteStub)
+        httpBodyStub.additionalHeaders = expectedHeaders
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.allHTTPHeaderFields, expectedHeaders)
     }
     
     func test_map_addsBothRouteAndBodyHeaders() throws {
-        apiRouteStub.headers = ["RouteStubKey": "RouteStubValue"]
-        apiBodyStub.additionalHeaders = ["BodyStubKey": "BodyStubValue"]
-        let urlRequest = try sut.map(apiRouteStub)
+        httpRouteStub.headers = ["RouteStubKey": "RouteStubValue"]
+        httpBodyStub.additionalHeaders = ["BodyStubKey": "BodyStubValue"]
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.allHTTPHeaderFields, ["RouteStubKey": "RouteStubValue", "BodyStubKey": "BodyStubValue"])
     }
     
     func test_map_addsBodyData() throws {
         let expectedData = Data([2, 0, 7, 7])
-        apiBodyStub.stubbedDataResult = expectedData
-        let urlRequest = try sut.map(apiRouteStub)
+        httpBodyStub.stubbedDataResult = expectedData
+        let urlRequest = try sut.map(httpRouteStub)
         XCTAssertEqual(urlRequest.httpBody, expectedData)
     }
     
     func test_map_throws_whenBodyDataThrows() {
         let expectedError = ErrorStub()
-        apiBodyStub.stubbedDataError = expectedError
+        httpBodyStub.stubbedDataError = expectedError
         
-        XCTAssertThrowsError(try sut.map(apiRouteStub)) { receivedError in
+        XCTAssertThrowsError(try sut.map(httpRouteStub)) { receivedError in
             XCTAssertEqual(receivedError as? ErrorStub, expectedError)
         }
     }
     
     func test_map_throws_whenPathIsInvalid() {
-        apiRouteStub.path = "💩"
+        httpRouteStub.path = "💩"
         
-        XCTAssertThrowsError(try sut.map(apiRouteStub)) { receivedError in
+        XCTAssertThrowsError(try sut.map(httpRouteStub)) { receivedError in
             XCTAssertEqual(receivedError as? RouteMapperError, RouteMapperError.invalidURL)
         }
     }
