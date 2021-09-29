@@ -1,4 +1,6 @@
 ## [Unreleased]
+
+## [2.0.0] - 2021-09-29
 ### Added
 - New `request` method to `HTTPClient` using the new async/await syntax.
 
